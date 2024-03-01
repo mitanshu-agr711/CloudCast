@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 const userSchema=new mongoose.Schema({
     username:{
@@ -45,5 +47,48 @@ const userSchema=new mongoose.Schema({
 },{
     timestamps:true
 })
+//pre use kar te hai kisi kam se phele hum kya kam karana chate hai
+//pre hum save mai use kar rhe becz save se phele data hum bcrypt karenge
+userSchema.pre("save",async function(next){
+
+//ab ye har bar password ko bcrypt karenga but hum chate hai ki jab password change ho jabhi kare
+if(!this.isModified(this.password)) return next();
+
+    this.password=bcrypt.hash(this.password,10)//10 represent kitana round/salt dalna hai
+    next()//for call back
+});
+
+//ab hum password ko checvk karenge
+
+userSchema.methods.isPassword.Correct=async function
+    (password)
+    {
+        return await bcrypt.compare(password,this.password)//it return ans in true or false
+    }
+
+userSchema.methode.generateAccessToken=function(){
+     return jwt.sign(
+        {
+            _id:this._id,
+            email:this.email,
+          username:this.username//this is use to access data from mongodb
+        },
+        process.env.ACCESS_TOKEN_SECRET,{
+           expiresIn:process.env.ACCESS_TOKEN_EXPIRE
+        }
+     )
+}
+userSchema.methode.generateExpireyToken=function(){
+    return jwt.sign(
+        {
+            _id:this._id,
+          username:this.username//this is use to access data from mongodb
+        },
+        process.env.REFRESH_TOKEN_SECRET,{
+           expiresIn:process.env.REFRESH_TOKEN_EXPIRE
+        }
+     )
+}
+
 
 export const User=mongoose.model("User",userSchema);
