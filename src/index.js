@@ -1,8 +1,8 @@
-import  express from "express";
+
 import mongoose from "mongoose";
 import { DB_NAME } from "./constant.js";
 import connectDB from "./db/connect.js";
-const app=express();
+import {app} from "./app.js";
 // app.use(express.json());
 
 // 

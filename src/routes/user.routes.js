@@ -1,8 +1,8 @@
 import { Router } from "express";
-import {registerUser} from "../controller/user.controller.js"
+import {registration} from "../controller/user.controller.js"
 
 const router=Router();
 
-router.route("/register").post(registerUser)
+router.route("/register").post(registration)
 
 export default router //default means import ke bakat man chsaha name desakte ho
