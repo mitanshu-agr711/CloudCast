@@ -54,13 +54,13 @@ userSchema.pre("save",async function(next){
 //ab ye har bar password ko bcrypt karenga but hum chate hai ki jab password change ho jabhi kare
 if(!this.isModified(this.password)) return next();
 
-    this.password=bcrypt.hash(this.password,10)//10 represent kitana round/salt dalna hai
+    this.password=await bcrypt.hash(this.password,10)//10 represent kitana round/salt dalna hai
     next()//for call back
 });
 
 //ab hum password ko checvk karenge
 
-userSchema.methods.isPassword.Correct=async function
+userSchema.methods.isPasswordCorrect=async function
     (password)
     {
         return await bcrypt.compare(password,this.password)//it return ans in true or false
