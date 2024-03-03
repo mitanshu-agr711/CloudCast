@@ -5,7 +5,7 @@ import { express } from "express";
 
 const app=express();
 
-app.use(cros({
+app.use(cors({
 origin:process.nextTick.CROS_ORIGIN,
 Credential:true
 }))
@@ -14,6 +14,13 @@ app.use(express.urlencoded({extended:true,limit:'16kb'}));
 app.use(express.static("Public"));
 app.use(cookieParser());
 
+//rouet import
+
+import {userRouter} from "./routes/user.rotes.js"
+
+//routes decalaration
+
+app.use("api/users",userRouter);
 
 
 export {app};
