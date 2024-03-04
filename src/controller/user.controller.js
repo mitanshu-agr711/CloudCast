@@ -28,18 +28,21 @@ const registration=asyncHandler(async(req,res)=>{
     }
   //ab karenge validtion
 
-  const exitingUser=User.findOne({
+  const exitingUser=await User.findOne({
     $or:[ { username}, {email}]//or ki takarah or kuch bhi use kar sakte hai but hum ak se jada chiz chate hai isliye
     //or use kar rhe
   })
-  console.log(exitingUser);
+  // console.log(exitingUser);
   if(exitingUser)
   {
     throw new Apierror(409,"this username and email is already register");
   }
-  const avatarLocalPath=req.file?.avatar[0]?.path;//path kyu ki abhi ye locally avabival hai cloud pe nhi hai ye
-  const coverImageLocalPath=req.file?.coverImage[0]?.path
-
+//path kyu ki abhi ye locally avabival hai cloud pe nhi hai ye
+  const avatarLocalPath = req.files["avatar"][0]?.path;
+  const coverImageLocalPath = req.files["coverImage"][0]?.path;
+  
+ console.log(avatarLocalPath)
+ console.log(coverImageLocalPath)
   if(!avatarLocalPath)
   {
     throw new Apierror(400,"avatar file is required")

@@ -1,4 +1,6 @@
 
+import dotenv from "dotenv";
+dotenv.config();
 import mongoose from "mongoose";
 import { DB_NAME } from "./constant.js";
 import connectDB from "./db/connect.js";
@@ -6,8 +8,6 @@ import {app} from "./app.js";
 // app.use(express.json());
 
 // 
-import dotenv from "dotenv";
-dotenv.config();
 
 connectDB()// ye promise return kar rha
 

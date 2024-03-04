@@ -30,6 +30,7 @@ const userSchema=new mongoose.Schema({
     },
     coverImage:{
         type:String,//cloudinary url
+       
     },
     watchHistory:[{//ise hum ne object banaya hai kyu ki
         //hum isme data store karte jayenge
@@ -66,7 +67,7 @@ userSchema.methods.isPasswordCorrect=async function
         return await bcrypt.compare(password,this.password)//it return ans in true or false
     }
 
-userSchema.methode.generateAccessToken=function(){
+userSchema.methods.generateAccessToken=function(){
      return jwt.sign(
         {
             _id:this._id,
@@ -78,7 +79,7 @@ userSchema.methode.generateAccessToken=function(){
         }
      )
 }
-userSchema.methode.generateExpireyToken=function(){
+userSchema.methods.generateExpireyToken=function(){
     return jwt.sign(
         {
             _id:this._id,
