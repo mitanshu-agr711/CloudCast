@@ -39,7 +39,15 @@ const registration=asyncHandler(async(req,res)=>{
   }
 //path kyu ki abhi ye locally avabival hai cloud pe nhi hai ye
   const avatarLocalPath = req.files["avatar"][0]?.path;
-  const coverImageLocalPath = req.files["coverImage"][0]?.path;
+  // const coverImageLocalPath = req.files["coverImage"][0]?.path;//ye jab chahiye hota jab hume cumpalsory coverimage
+  //chahiye  uske bina age proceed nhi hoga
+
+  //but hame to choice mai chahiye so
+  let coverImageLocalPath;
+  if(req.files&&Array.isArray(req.files.coverImage)&&req.files.coverImage.length>0)
+  {
+     coverImageLocalPath=req.files.coverImage[0].path;
+  }
   
  console.log(avatarLocalPath)
  console.log(coverImageLocalPath)
@@ -69,6 +77,7 @@ const registration=asyncHandler(async(req,res)=>{
         username:username.toLowerCase()
     }
  )
+ console.log(user);
 
  const createduser=await User.findById(user._id).select(
     "-password -refreshToken"

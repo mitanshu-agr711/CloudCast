@@ -11,14 +11,14 @@ const userSchema=new mongoose.Schema({
         index:true,
         lowercase:true
     },
-    username:{
+    email:{
         type:String,
         require:true,
         unique:true,
         trim:true,
         index:true
     },
-    fullname:{
+    fullName:{
         type:String,
         require:true,
         trim:true,
@@ -53,7 +53,7 @@ const userSchema=new mongoose.Schema({
 userSchema.pre("save",async function(next){
 
 //ab ye har bar password ko bcrypt karenga but hum chate hai ki jab password change ho jabhi kare
-if(!this.isModified(this.password)) return next();
+if(!this.isModified('password')) return next();
 
     this.password=await bcrypt.hash(this.password,10)//10 represent kitana round/salt dalna hai
     next()//for call back
