@@ -74,12 +74,13 @@ userSchema.methods.generateAccessToken=function(){
             email:this.email,
           username:this.username//this is use to access data from mongodb
         },
-        process.env.ACCESS_TOKEN_SECRET,{
+        process.env.ACCESS_TOKEN_SECRET,
+        {
            expiresIn:process.env.ACCESS_TOKEN_EXPIRE
         }
      )
 }
-userSchema.methods.generateExpireyToken=function(){
+userSchema.methods.generateRefreshToken=function(){
     return jwt.sign(
         {
             _id:this._id,
