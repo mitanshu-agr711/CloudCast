@@ -42,7 +42,7 @@ const userSchema=new mongoose.Schema({
         require:true
     },
     refreshToken:{
-        typr:String
+        type:String
     }
 
 },{
@@ -68,7 +68,9 @@ userSchema.methods.isPasswordCorrect=async function
     }
 
 userSchema.methods.generateAccessToken=function(){
+       console.log("bhai mai to tokken banaraha hon")
      return jwt.sign(
+       
         {
             _id:this._id,
             email:this.email,

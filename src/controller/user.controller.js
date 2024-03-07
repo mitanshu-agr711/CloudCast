@@ -3,21 +3,28 @@ import { Apierror } from "../utils/errorHandler.js";
 import { User } from "../models/userModule.js";
 import { uploadCloudinary } from "../utils/clodinary.js";
 import { ApiResponse } from "../utils/Apiresponse.js";
+import  jwt  from "jsonwebtoken";
+import mongoose from "mongoose";
 
-const generateAccessandAccessToken = async (exit_userId) => {
+const generate_token = async (exit_userId) => {
 
   try {
     const user = await User.findById(exit_userId);
-    const Access_token = await user.generateAccessToken();
-    const REFRESH_TOKEN = await user.generateRefreshToken();
-   
-    user.REFRESH_TOKEN= refreshToken;
+    console.log("hello");
+    console.log("User found:", user);
+    const accessToken = await user.generateAccessToken();
+    
+    console.log("ban gaya bhai access token ye raha:",accessToken);
+    const refreshToken = await user.generateRefreshToken();
+    console.log("Refresh token  bhi bangaya", refreshToken);
+    user.refreshToken= refreshToken;
     await user.save({ValidateBeforeSave : false})//means validate kar do agr hum ye nhi likha te to bo validation mangata
     //to hame use password dena padta 
     
-    return {Access_token,REFRESH_TOKEN};
+    return {accessToken, refreshToken};
      }
   catch(error) {
+    console.log("real error:",error)
     throw new Apierror(500, "something went wrong");
   }
 
@@ -115,13 +122,14 @@ const loginUser = asyncHandler(async (req, res) => {
   //access and refresh token
   //send secure cookies,res u register successfully
 
-  const { username, email } = req.body;
-  if (!email || !username) {
+  const { username, email,password } = req.body;
+  if (!(email || username)) {
     throw new Apierror(400, "username and email is required");
   }
   const exit_user = await User.findOne({
     $or: [{ username }, { email }]
   })
+
   if (!exit_user) {
     throw new Apierror(400, "user is not register then go and register first")
   }
@@ -132,7 +140,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new Apierror(401, "password is incorrect")
   }
 
-  const {REFRESH_TOKEN,Access_token}= await generateAccessandAccessToken(exit_user._id);
+  const {accessToken,refreshToken} = await generate_token(exit_user._id);
 
   const loggedinUser=await User.findById(exit_user._id).select("-password -refreshToken");
   const option=
@@ -143,21 +151,47 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
  return res.status(200)
- .cookie("Access_token",Access_token,option)
- .cookie("REFRESH_TOKEN",REFRESH_TOKEN,option)
+ .cookie("Access_token",accessToken,option)
+ .cookie("refreshToken",refreshToken,option)
  .json(
   new ApiResponse(200,{
-    user:loggedinUser,Access_token,REFRESH_TOKEN//ye cookie se bhi bhej rhe the but mai isliye alg se bhej rha hu
+    user:loggedinUser,
+    accessToken, // Correct variable name
+      refreshToken // Correct variable name
+      //ye cookie se bhi bhej rhe the but mai isliye alg se bhej rha hu
     //kyu ki pata nhi user locaaly use store karna chahai 
   },
-  "User logged in successfully"
+  "User logging in successfully"
   )
  )
 
 })
 
 const logoutUser=asyncHandler(async(req,res)=>{
-  
+User.findByIdAndUpdate(
+  req.user._id,
+  {
+    $set :{
+   refreshToken:undefined
+    }
+  },
+  {
+    new:true
+  }
+)
+
+const option=
+  {
+    httpOnly:true,//ise cookies modified nhi hogi frontend se
+    //secure true kar ne se hum means sirf server modified kar sakta hai
+    secure:true
+  }
+
+  return res.status(200)
+  .clearCookie("Access_token",option)
+  .clearCookie("refreshToken",option)
+  .json(new ApiResponse(200,{},"user logged out"))
+
 })
 
 
