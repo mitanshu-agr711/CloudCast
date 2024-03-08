@@ -3,8 +3,7 @@ import { Apierror } from "../utils/errorHandler.js";
 import { User } from "../models/userModule.js";
 import { uploadCloudinary } from "../utils/clodinary.js";
 import { ApiResponse } from "../utils/Apiresponse.js";
-import  jwt  from "jsonwebtoken";
-import mongoose from "mongoose";
+import { Jwt } from "jsonwebtoken";
 
 const generate_token = async (exit_userId) => {
 
@@ -13,18 +12,18 @@ const generate_token = async (exit_userId) => {
     console.log("hello");
     console.log("User found:", user);
     const accessToken = await user.generateAccessToken();
-    
-    console.log("ban gaya bhai access token ye raha:",accessToken);
+
+    console.log("ban gaya bhai access token ye raha:", accessToken);
     const refreshToken = await user.generateRefreshToken();
     console.log("Refresh token  bhi bangaya", refreshToken);
-    user.refreshToken= refreshToken;
-    await user.save({ValidateBeforeSave : false})//means validate kar do agr hum ye nhi likha te to bo validation mangata
+    user.refreshToken = refreshToken;
+    await user.save({ ValidateBeforeSave: false })//means validate kar do agr hum ye nhi likha te to bo validation mangata
     //to hame use password dena padta 
-    
-    return {accessToken, refreshToken};
-     }
-  catch(error) {
-    console.log("real error:",error)
+
+    return { accessToken, refreshToken };
+  }
+  catch (error) {
+    console.log("real error:", error)
     throw new Apierror(500, "something went wrong");
   }
 
@@ -122,7 +121,7 @@ const loginUser = asyncHandler(async (req, res) => {
   //access and refresh token
   //send secure cookies,res u register successfully
 
-  const { username, email,password } = req.body;
+  const { username, email, password } = req.body;
   if (!(email || username)) {
     throw new Apierror(400, "username and email is required");
   }
@@ -140,63 +139,103 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new Apierror(401, "password is incorrect")
   }
 
-  const {accessToken,refreshToken} = await generate_token(exit_user._id);
+  const { accessToken, refreshToken } = await generate_token(exit_user._id);
 
-  const loggedinUser=await User.findById(exit_user._id).select("-password -refreshToken");
-  const option=
+  const loggedinUser = await User.findById(exit_user._id).select("-password -refreshToken");
+  const option =
   {
-    httpOnly:true,//ise cookies modified nhi hogi frontend se
+    httpOnly: true,//ise cookies modified nhi hogi frontend se
     //secure true kar ne se hum means sirf server modified kar sakta hai
-    secure:true
-  }
-
- return res.status(200)
- .cookie("Access_token",accessToken,option)
- .cookie("refreshToken",refreshToken,option)
- .json(
-  new ApiResponse(200,{
-    user:loggedinUser,
-    accessToken, // Correct variable name
-      refreshToken // Correct variable name
-      //ye cookie se bhi bhej rhe the but mai isliye alg se bhej rha hu
-    //kyu ki pata nhi user locaaly use store karna chahai 
-  },
-  "User logging in successfully"
-  )
- )
-
-})
-
-const logoutUser=asyncHandler(async(req,res)=>{
-User.findByIdAndUpdate(
-  req.user._id,
-  {
-    $set :{
-   refreshToken:undefined
-    }
-  },
-  {
-    new:true
-  }
-)
-
-const option=
-  {
-    httpOnly:true,//ise cookies modified nhi hogi frontend se
-    //secure true kar ne se hum means sirf server modified kar sakta hai
-    secure:true
+    secure: true
   }
 
   return res.status(200)
-  .clearCookie("Access_token",option)
-  .clearCookie("refreshToken",option)
-  .json(new ApiResponse(200,{},"user logged out"))
+    .cookie("Access_token", accessToken, option)
+    .cookie("refreshToken", refreshToken, option)
+    .json(
+      new ApiResponse(200, {
+        user: loggedinUser,
+        accessToken, // Correct variable name
+        refreshToken // Correct variable name
+        //ye cookie se bhi bhej rhe the but mai isliye alg se bhej rha hu
+        //kyu ki pata nhi user locaaly use store karna chahai 
+      },
+        "User logging in successfully"
+      )
+    )
 
 })
 
+const logoutUser = asyncHandler(async (req, res) => {
+  User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: undefined
+      }
+    },
+    {
+      new: true
+    }
+  )
 
+  const option =
+  {
+    httpOnly: true,//ise cookies modified nhi hogi frontend se
+    //secure true kar ne se hum means sirf server modified kar sakta hai
+    secure: true
+  }
+
+  return res.status(200)
+    .clearCookie("Access_token", option)
+    .clearCookie("refreshToken", option)
+    .json(new ApiResponse(200, {}, "user logged out"))
+
+})
+
+const Refresh_tokengen = asyncHandler(async (req, res) => {
+
+  try {
+    const incoming_token = req.cookie.refreshToken || req.body.refreshToken;
+    if (!incoming_token)
+      throw new Apierror(401, "unauthorised excess")
+    //ab verify karenge
+    const decoded_token = Jwt.verify(
+      incoming_token, process.env.REFRESH_TOKEN_SECRET)
+    const user = await User.findById(decoded_token?._id)
+    if (!user) {
+      throw new Apierror(400, "invalid user");
+    }
+    if (incoming_token !== user?.refreshToken)
+      throw new Apierror(401, "refresh token is expired")
+  
+
+const option = {
+  httpOnly: true,
+  secure: true
+}
+
+const { access, refresh } = await generate_token(user._id)
+
+return res
+  .cookie("Access_token", access, option)
+  .cookie("refreshToken", refresh, option)
+  .json(
+    new ApiResponse(
+      200,
+      {
+        access,refresh
+      },
+      "token is successfully refresh "
+    )
+  )
+   }catch (error) {
+    console.log("ye rha error",error)
+  throw new Apierror(402, "refresh token generation their is an error")}
+})
 export {
   registration,
   loginUser,
-  logoutUser
+  logoutUser,
+  Refresh_tokengen
 };
