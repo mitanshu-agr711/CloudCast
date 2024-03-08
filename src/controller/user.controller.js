@@ -3,7 +3,7 @@ import { Apierror } from "../utils/errorHandler.js";
 import { User } from "../models/userModule.js";
 import { uploadCloudinary } from "../utils/clodinary.js";
 import { ApiResponse } from "../utils/Apiresponse.js";
-import { Jwt } from "jsonwebtoken";
+// import { Jwt } from "jsonwebtoken";
 
 const generate_token = async (exit_userId) => {
 
@@ -18,7 +18,7 @@ const generate_token = async (exit_userId) => {
     console.log("Refresh token  bhi bangaya", refreshToken);
     user.refreshToken = refreshToken;
     await user.save({ ValidateBeforeSave: false })//means validate kar do agr hum ye nhi likha te to bo validation mangata
-    //to hame use password dena padta 
+    //to hame use password dena padta  
 
     return { accessToken, refreshToken };
   }
