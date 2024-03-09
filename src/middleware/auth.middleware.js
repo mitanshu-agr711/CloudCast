@@ -17,6 +17,7 @@ export const VerifyJwToken=asyncHandler(async(req,res,next)=>{
     if(!user) throw new Apierror(401,"invalid access token")
  
     req.user=user//req.user se hum ak object add kar rhe hai or object hamare user hai jo hum ne upar define kiya
+    //req.user mai hum ne pura user hi inject kar liya hai
     next()
    } catch (error) {
     throw new Apierror(401,error?.message||"invalid access token")
