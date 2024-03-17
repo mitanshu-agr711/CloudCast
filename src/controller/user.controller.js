@@ -363,7 +363,7 @@ const getChannelProfile = asyncHandler(async (req, res) => {
   if (!username.trim()) {
     throw new Apierror(400, "username is missing")
   }
-  
+
   const channel = await User.aggregate(
     [
       {
@@ -392,78 +392,79 @@ const getChannelProfile = asyncHandler(async (req, res) => {
       },
 
       {//to add something
-        $addFields:{
-          suscribeCount:{
-            $size:"$suscribers"
+        $addFields: {
+          suscribeCount: {
+            $size: "$suscribers"
           },
-          channelSuscribedToCount:{
-            $size:"$suscribedTo"
+          channelSuscribedToCount: {
+            $size: "$suscribedTo"
           },
-          isSuscribed:{
+          isSuscribed: {
             $cond:
-           { if:{$in:[req.user?._id,"$suscribers.Suscriber"]},//means suscribes ke andar jao with module suscriber
-           //check kar rhe hai login hai already ya nhi
-             then:true,
-             else:false
-          }
+            {
+              if: { $in: [req.user?._id, "$suscribers.Suscriber"] },//means suscribes ke andar jao with module suscriber
+              //check kar rhe hai login hai already ya nhi
+              then: true,
+              else: false
+            }
 
           }
         }
       },
       {//project define i only give selected values
-        $project:{
-          fullName:1,
-          suscribeCount:1,
-          channelSuscribedToCount:1,
-          isSuscribed:1,
-          email:1,
-          avatar:1,
-          coverImage:1,
-          username:1
+        $project: {
+          fullName: 1,
+          suscribeCount: 1,
+          channelSuscribedToCount: 1,
+          isSuscribed: 1,
+          email: 1,
+          avatar: 1,
+          coverImage: 1,
+          username: 1
 
         }
       }
     ]
   )
 
-  if(!channel?.length)
-  throw new Apierror(400,"channel does not exit")
+  if (!channel?.length)
+    throw new Apierror(400, "channel does not exit")
   console.log(channel);
   return res.status(200)
-  .json(
-    new ApiResponse(200,channel[0],"we successfully get channel profile")
-  )
+    .json(
+      new ApiResponse(200, channel[0], "we successfully get channel profile")
+    )
 })
 
-const getHistory=asyncHandler(async(req,res)=>{
+const getHistory = asyncHandler(async (req, res) => {
   //req.user._id it give not a id a number it give it as a string
-  const user=await User.aggregate(
+  const user = await User.aggregate(
     [
       {
-        $match:{
+        $match: {
           //mongoose hame permission deta hai id generate ke liye hum id ase generate karte hai
-          _id:new mongoose.Types.ObjectId(req.user._id)
+          _id: new mongoose.Types.ObjectId(req.user._id)
         }
       },
       {
-        $lookup:{
-          from:"videos",//yha pe hum schema likha te hai ki konse schema se data le rhe
-          localField:"watchHistory",
-          foreignField:"_id",
-          as:"watchHistory",//means hum kya bolna cha te hai
-          pipeline:[
+        $lookup: {
+          from: "videos",//yha pe hum schema likha te hai ki konse schema se data le rhe
+          localField: "watchHistory",
+          foreignField: "_id",
+          as: "watchHistory",//means hum kya bolna cha te hai
+          pipeline: [
             {
-              $lookup:{
-                form:"user",
-                localField:"owner",
-                foreignField:"_id",
-                as:"Owner",
-                pipeline:[
+              $lookup: {
+                form: "user",
+                localField: "owner",
+                foreignField: "_id",
+                as: "Owner",
+                pipeline: [
                   {
-                    $project:{
-                      fullName:1,
-                      username:1,
-                      avatar:1
+                    $project: {
+                      fullName: 1,
+                      username: 1,
+                      avatar: 1
                     }
                   }
                 ]
@@ -471,9 +472,9 @@ const getHistory=asyncHandler(async(req,res)=>{
               }
             },
             {
-              $addFields:{
-                owner:{
-                  $first:"owner"
+              $addFields: {
+                owner: {
+                  $first: "owner"
                 }
               }
             }
@@ -484,10 +485,10 @@ const getHistory=asyncHandler(async(req,res)=>{
     ]
   )
   res
-  .status(200)
-  .jsonn(
-    new ApiResponse(200,user[0].watchHistory,"watch history fetch successfully")
-  )
+    .status(200)
+    .jsonn(
+      new ApiResponse(200, user[0].watchHistory, "watch history fetch successfully")
+    )
 })
 
 export {
