@@ -374,137 +374,157 @@ const Update_Coverimage = asyncHandler(async (req, res) => {
 
 const getChannelProfile = asyncHandler(async (req, res) => {
 
-  const { username } = req.params//means direct uske url se baat karo
-
-  if (!username.trim()) {
-    throw new Apierror(400, "username is missing")
-  }
-
-  const channel = await User.aggregate(
-    [
-      {
-        $match: {
-          username: username?.toLowerCase()
-        }
+ try {
+   const { username } = req.params//means direct uske url se baat karo
+ 
+   if (!username.trim()) {
+     throw new Apierror(400, "username is missing")
+   }
+ 
+   const channel = await User.aggregate(
+     [
+       {
+         $match: {
+           username: username?.toLowerCase()
+         }
+       },
+       //for checking user ke kitanse suscriber hai
+       {
+         $lookup: {
+           from: "subscriptions",//this is import from subsecrition module if it import as Subscription
+           //than we write subscriptions becz in database it all letter write in lowercase with its plural
+           localField: "_id",
+           foreignField: "channel",//foreignfield hum ne channel rha to hame no. of suscriber milenge
+           as: "subscribers"
+ 
+         }
+       }
+       //apne kitano ko suscribe kar rhakha hai
+       ,
+       {
+         $lookup: {
+          from:"subscriptions",
+         localField: "_id",
+         foreignField: "subscribers",
+         as: "subscriberedTo"//mene kis ko suscribe kar rakha hai
+       }
       },
-      //for checking user ke kitanse suscriber hai
-      {
-        $lookup: {
-          from: "subscriptions",//this is import from subsecrition module if it import as Subscription
-          //than we write subscriptions becz in database it all letter write in lowercase with its plural
-          localField: "_id",
-          foreignField: "channel",//foreignfield hum ne channel rha to hame no. of suscriber milenge
-          as: "subscribers"
-
-        }
-      }
-      //apne kitano ko suscribe kar rhakha hai
-      ,
-      {
-        $lookup: "subscriptions ",
-        localField: "_id",
-        foreignField: "suscribers",
-        as: "suscriberedTo"//mene kis ko suscribe kar rakha hai
-      },
-
-      {//to add something
-        $addFields: {
-          suscribeCount: {
-            $size: "$suscribers"
-          },
-          channelSuscribedToCount: {
-            $size: "$suscribedTo"
-          },
-          isSuscribed: {
-            $cond:
-            {
-              if: { $in: [req.user?._id, "$suscribers.Suscriber"] },//means suscribes ke andar jao with module suscriber
-              //check kar rhe hai login hai already ya nhi
-              then: true,
-              else: false
+ 
+       {//to add something
+         $addFields: {
+           suscribeCount: {
+            $cond: {
+              if: { $isArray: "$subscribers" },
+             then :{$size: "$subscribers"},
+             else: 0 
             }
-
-          }
-        }
-      },
-      {//project define i only give selected values
-        $project: {
-          fullName: 1,
-          suscribeCount: 1,
-          channelSuscribedToCount: 1,
-          isSuscribed: 1,
-          email: 1,
-          avatar: 1,
-          coverImage: 1,
-          username: 1
-
-        }
-      }
-    ]
-  )
-
-  if (!channel?.length)
-    throw new Apierror(400, "channel does not exit")
-  console.log(channel);
-  return res.status(200)
-    .json(
-      new ApiResponse(200, channel[0], "we successfully get channel profile")
-    )
+           },
+           channelSuscribedToCount: {
+            $cond: {
+              if: { $isArray: "$subscriberedTo" },
+              then: { $size: "$subscriberedTo" },
+              else: 0 
+            }
+           },
+           isSuscribed: {
+             $cond:
+             {
+               if: { $in: [req.user?._id, "$subscribers.Subscriber"] },//means suscribes ke andar jao with module suscriber
+               //check kar rhe hai login hai already ya nhi
+               then: true,
+               else: false
+             }
+ 
+           }
+         }
+       },
+       {//project define i only give selected values
+         $project: {
+           fullName: 1,
+           suscribeCount: 1,
+           channelSuscribedToCount: 1,
+           isSuscribed: 1,
+           email: 1,
+           avatar: 1,
+           coverImage: 1,
+           username: 1
+ 
+         }
+       }
+     ]
+   )
+ 
+   if (!channel?.length)
+     throw new Apierror(400, "channel does not exit")
+   console.log(channel);
+   return res.status(200)
+     .json(
+       new ApiResponse(200, channel[0], "we successfully get channel profile")
+     )
+ } catch (error) {
+  console.log("muje koi solve karo",error)
+  throw new Apierror(400,"error to get Profile")
+ }
 })
 
 const getHistory = asyncHandler(async (req, res) => {
   //req.user._id it give not a id a number it give it as a string
-  const user = await User.aggregate(
-    [
-      {
-        $match: {
-          //mongoose hame permission deta hai id generate ke liye hum id ase generate karte hai
-          _id: new mongoose.Types.ObjectId(req.user._id)
-        }
-      },
-      {
-        $lookup: {
-          from: "videos",//yha pe hum schema likha te hai ki konse schema se data le rhe
-          localField: "watchHistory",
-          foreignField: "_id",
-          as: "watchHistory",//means hum kya bolna cha te hai
-          pipeline: [
-            {
-              $lookup: {
-                form: "user",
-                localField: "owner",
-                foreignField: "_id",
-                as: "Owner",
-                pipeline: [
-                  {
-                    $project: {
-                      fullName: 1,
-                      username: 1,
-                      avatar: 1
-                    }
-                  }
-                ]
-                //ye localFied or as ak jasa by chance hia hai
-              }
-            },
-            {
-              $addFields: {
-                owner: {
-                  $first: "owner"
-                }
-              }
-            }
-          ]
-
-        }
-      }
-    ]
-  )
-  res
-    .status(200)
-    .jsonn(
-      new ApiResponse(200, user[0].watchHistory, "watch history fetch successfully")
-    )
+ try {
+   const user = await User.aggregate(
+     [
+       {
+         $match: {
+           //mongoose hame permission deta hai id generate ke liye hum id ase generate karte hai
+           _id: new mongoose.Types.ObjectId(req.user._id)
+         }
+       },
+       {
+         $lookup: {
+           from: "videos",//yha pe hum schema likha te hai ki konse schema se data le rhe
+           localField: "watchHistory",
+           foreignField: "_id",
+           as: "watchHistory",//means hum kya bolna cha te hai
+           pipeline: [
+             {
+               $lookup: {
+                 from: "user",
+                 localField: "owner",
+                 foreignField: "_id",
+                 as: "owner",
+                 pipeline: [
+                   {
+                     $project: {
+                       fullName: 1,
+                       username: 1,
+                       avatar: 1
+                     }
+                   }
+                 ]
+                 //ye localFied or as ak jasa by chance hia hai
+               }
+             },
+             {
+               $addFields: {
+                 owner: {
+                   $first: "owner"
+                 }
+               }
+             }
+           ]
+ 
+         }
+       }
+     ]
+   )
+   res
+     .status(200)
+     .jsonn(
+       new ApiResponse(200, user[0].watchHistory, "watch history fetch successfully")
+     )
+ } catch (error) {
+  console.log("mai yha hu",error)
+  throw new Apierror(400,"history can not get")
+ }
 })
 
 export {
