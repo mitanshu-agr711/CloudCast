@@ -50,3 +50,7 @@ console.log(`server is running on port ${process.env.PORT||8000}` )
 //         console.log(`error `,error);
 //     }
 // })()
+
+
+//channel se  suscriber milte hai
+//suscribe se channel
