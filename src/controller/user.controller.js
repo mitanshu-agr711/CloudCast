@@ -3,6 +3,9 @@ import { Apierror } from "../utils/errorHandler.js";
 import { User } from "../models/userModule.js";
 import { uploadCloudinary } from "../utils/clodinary.js";
 import { ApiResponse } from "../utils/Apiresponse.js";
+import { VerifyJwToken } from "../middleware/auth.middleware.js";
+
+import Jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 // import { subscription } from "../models/subscription.models.js";
 // import { Jwt } from "jsonwebtoken";
@@ -198,7 +201,9 @@ const logoutUser = asyncHandler(async (req, res) => {
 const Refresh_tokengen = asyncHandler(async (req, res) => {
 
   try {
-    const incoming_token = req.cookie.refreshToken || req.body.refreshToken;
+    console.log("i am going")
+    console.log("hello ye ho rha hai kya error",req.cookies.refreshToken);
+    const incoming_token = req.cookies.refreshToken|| req.body.refreshToken;
     if (!incoming_token)
       throw new Apierror(401, "unauthorised excess")
     //ab verify karenge
@@ -211,22 +216,21 @@ const Refresh_tokengen = asyncHandler(async (req, res) => {
     if (incoming_token !== user?.refreshToken)
       throw new Apierror(401, "refresh token is expired")
 
+      const {accessToken, refreshToken} = await generate_token(user._id)
 
     const option = {
       httpOnly: true,
       secure: true
     }
 
-    const { access, refresh } = await generate_token(user._id)
-
     return res
-      .cookie("Access_token", access, option)
-      .cookie("refreshToken", refresh, option)
+      .cookie("Access_token", accessToken, option)
+    .cookie("refreshToken", refreshToken, option)
       .json(
         new ApiResponse(
           200,
           {
-            access, refresh
+            accessToken, refreshToken
           },
           "token is successfully refresh "
         )
@@ -238,28 +242,40 @@ const Refresh_tokengen = asyncHandler(async (req, res) => {
 })
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
-  const { oldpassword, newpassword } = req.body;
 
-  const user = await User.findById(req.user?._id)
-  const isPasswordCorrect = await isPasswordCorrect(oldpassword);
+  try {
+    const { oldpassword, newpassword } = req.body;
+   if(!oldpassword&&!newpassword)
+   {
+    throw new Apierror(400,"enter old and new password")
+   }
+  
+    const user = await User.findById(req.user?._id)
+   
+    const isPasswordCorrect = await user.isPasswordCorrect(oldpassword);
+  
+    if (!isPasswordCorrect)
+     { throw new Apierror(400, "password is incorrect");}
+  
+    user.password = newpassword;
+  
+    await user.save({
+      validitionBeforeSave: false
+    })
 
-  if (!isPasswordCorrect)
-    throw new Apierror(400, "password is incorrect");
-
-  user.password = newpassword;
-
-  await user.save({
-    validitionBeforeSave: false
-  })
-
-
-  return res
-    .status(200)
-    .json(new ApiResponse
-      (
-        200, {}, "password changed"
-      ))
-
+  
+    return res
+      .status(200)
+      .json(new ApiResponse
+        (
+          200, {}, "password changed"
+        ))
+  
+        }
+  catch (error) {
+    console.log("ye rha error",error)
+    throw new Apierror(400,"error on password")
+  }
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {

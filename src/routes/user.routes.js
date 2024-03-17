@@ -44,7 +44,7 @@ router.route("/Update-Account").patch(VerifyJwToken, Update_Account)//patch use 
 
 router.route("/update_Avatar").patch(VerifyJwToken, upload.single("avatar"), Update_Avatar)//jo braket mai likha hai bo uska name hai
 
-router.route("/cover-image").patch(VerifyJwToken, upload.single("/coverImage"), Update_Coverimage)
+router.route("/cover-image").patch(VerifyJwToken, upload.single("coverImage"), Update_Coverimage)
 
 router.route("/c/:username").get(VerifyJwToken, getChannelProfile)//params use kiya isliye /c/:
 
