@@ -476,6 +476,7 @@ const getHistory = asyncHandler(async (req, res) => {
          $match: {
            //mongoose hame permission deta hai id generate ke liye hum id ase generate karte hai
            _id: new mongoose.Types.ObjectId(req.user._id)
+
          }
        },
        {
@@ -506,7 +507,7 @@ const getHistory = asyncHandler(async (req, res) => {
              {
                $addFields: {
                  owner: {
-                   $first: "owner"
+                   $first: "$owner"
                  }
                }
              }
@@ -518,7 +519,7 @@ const getHistory = asyncHandler(async (req, res) => {
    )
    res
      .status(200)
-     .jsonn(
+     .json(
        new ApiResponse(200, user[0].watchHistory, "watch history fetch successfully")
      )
  } catch (error) {
