@@ -50,4 +50,6 @@ router.route("/c/:username").get(VerifyJwToken, getChannelProfile)//params use k
 
 router.route("/History").get(VerifyJwToken, getHistory)
 
+
+
 export default router //default means import ke bakat man chsaha name desakte ho

@@ -429,7 +429,8 @@ const getChannelProfile = asyncHandler(async (req, res) => {
            isSuscribed: {
              $cond:
              {
-               if: { $in: [req.user?._id, "$subscribers.Subscriber"] },//means suscribes ke andar jao with module suscriber
+               if: { $in: [req.user?._id, "$subscribers.Subscriber"] },//means suscribes ke andar jao with 
+               //module suscriber
                //check kar rhe hai login hai already ya nhi
                then: true,
                else: false
