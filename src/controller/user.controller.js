@@ -299,7 +299,7 @@ const Update_Account = asyncHandler(async (req, res) => {
         username, email
       }
     },
-    { new: true })
+    { new: true })//return update value automatically
     .select("-password");
 
   return res.status(200)
