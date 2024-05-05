@@ -3,7 +3,6 @@ import { Apierror } from "../utils/errorHandler.js";
 import { User } from "../models/userModule.js";
 import { uploadCloudinary } from "../utils/clodinary.js";
 import { ApiResponse } from "../utils/Apiresponse.js";
-import { VerifyJwToken } from "../middleware/auth.middleware.js";
 
 import Jwt from "jsonwebtoken";
 import mongoose from "mongoose";

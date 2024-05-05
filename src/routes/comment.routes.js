@@ -2,21 +2,22 @@ import { Router } from "express";
 
 import{
     addcomment,
-    get_comment,
     update_comment,
-    deletecomment
-} from "../controller/comment.controller"
+    // deletecomment,
+    get_comment
+} from "../controller/comment.controller.js"
 
-import { VerifyJwToken } from "../middleware/auth.middleware";
+// import { VerifyJwToken } from "../middleware/auth.middleware.js";
 
 const router=Router();
 
-Router.use(VerifyJwToken);
 
-router.route("/addcomment").post(addcomment);
+// router.use(VerifyJwToken);
+
+router.route("/comment").post(addcomment);
 router.route("/c/:getvideo").get(get_comment);
 router.route("/updatecomment").patch(update_comment);
-router.route("/deletecomment").delete(deletecomment);
+// router.route("/deletecomment").delete(deletecomment);
 
-export default router;
+export default router
 
