@@ -45,38 +45,45 @@ const getAllvideo=asyncHandler(async(req,res)=>
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description } = req.body
-    if (!title && !description) {
-        throw new Apierror(404, "give title and add some information about video");
-    }
-    const Videolocalpath = req.file?.videoFile[0]?.path;
-    const videoFile = await uploadCloudinary(Videolocalpath);
-
-    if (!videoFile) {
-        throw new Apierror(404, "video is not upload");
-    }
-    const {thumbnail}=req.body;
-    const image=await uploadCloudinary(thumbnail);
-    if(!image)
-        {
-            throw new Apierror(404,"we can not get thumbnail of api");
-        }
-
-    const video_detail = await Video.create
-        ({
-            videoFile: videoFile.url,
-            image:thumbnail.url,
-            title,
-            description
-        }
-        )
-    if (!video_detail) {
-        throw new Apierror(404, "something went wrong");
-    }
-    return res.status(202).json
-        (
-            new ApiResponse(202, video_detail, "video upload successfully")
-        )
+   try {
+     const { title, description,duration } = req.body
+     if (!title && !description) {
+         throw new Apierror(404, "give title and add some information about video");
+     }
+    //  console.log(req.files);
+     const Videolocalpath = req.files?.["videoFile"][0]?.path;
+     console.log(Videolocalpath);
+     const videoFile = await uploadCloudinary(Videolocalpath);
+//   console.log(videoFile);
+     if (!videoFile) {
+         throw new Apierror(404, "video is not upload");
+     }
+     const thumbnail=req.files["thumbnail"][0]?.path;
+    //  console.log(thumbnail);
+     const image=await uploadCloudinary(thumbnail);
+     if(!image)
+         {
+             throw new Apierror(404,"we can not get thumbnail");
+         }
+ 
+     const video_detail = await Video.create
+         ({
+             videoFile: videoFile.url,
+             image:thumbnail.url,
+             title,
+             description,duration
+         }
+         )
+     if (!video_detail) {
+         throw new Apierror(404, "something went wrong");
+     }
+     return res.status(202).json
+         (
+             new ApiResponse(202, video_detail, "video upload successfully")
+         )
+   } catch (error) {
+    console.log("video error ",error)
+   }
 })
 
 const getVideoById=asyncHandler(async(req,res)=>{

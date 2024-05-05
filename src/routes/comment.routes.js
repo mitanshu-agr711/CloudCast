@@ -7,7 +7,7 @@ import{
     get_comment
 } from "../controller/comment.controller.js"
 
-// import { VerifyJwToken } from "../middleware/auth.middleware.js";
+import { VerifyJwToken } from "../middleware/auth.middleware.js";
 
 const router=Router();
 

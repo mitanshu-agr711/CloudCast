@@ -18,11 +18,12 @@ app.use(cookieParser());
 import userRouter from "./routes/user.routes.js"
 
 import comment from "./routes/comment.routes.js";
-
+import Video from "./routes/video.routes.js";
 //routes decalaration
 
 app.use("/api/users",userRouter);
 app.use("/api/users",comment)
+app.use("/api/videos",Video)
 console.log("hello");
 
 export {app};
