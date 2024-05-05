@@ -55,10 +55,17 @@ const publishAVideo = asyncHandler(async (req, res) => {
     if (!videoFile) {
         throw new Apierror(404, "video is not upload");
     }
+    const {thumbnail}=req.body;
+    const image=await uploadCloudinary(thumbnail);
+    if(!image)
+        {
+            throw new Apierror(404,"we can not get thumbnail of api");
+        }
 
     const video_detail = await Video.create
         ({
             videoFile: videoFile.url,
+            image:thumbnail.url,
             title,
             description
         }
@@ -87,5 +94,20 @@ const getVideoById=asyncHandler(async(req,res)=>{
 
 const deleteVideo=asyncHandler(async(req,res)=>{
     const {title}=req.body
-    
+    const deleteVideo=await uploadCloudinary.destroy(title);
+    if(deleteVideo.result!=='ok')
+        {
+            throw new Apierror(410,"error in deleting video");
+        }
+        return res.status(205).json(
+            205,{},"your video successfully deleted"
+        )
 })
+
+export
+{
+    getAllvideo,
+    publishAVideo,
+    getVideoById,
+    deleteVideo
+}

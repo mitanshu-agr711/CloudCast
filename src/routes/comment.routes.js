@@ -12,7 +12,7 @@ import{
 const router=Router();
 
 
-// router.use(VerifyJwToken);
+router.use(VerifyJwToken);
 
 router.route("/comment").post(addcomment);
 router.route("/c/:getvideo").get(get_comment);
