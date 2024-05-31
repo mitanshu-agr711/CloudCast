@@ -58,10 +58,10 @@ const publishAVideo = asyncHandler(async (req, res) => {
      if (!videoFile) {
          throw new Apierror(404, "video is not upload");
      }
-     const thumbnail=req.files["thumbnail"][0]?.path;
+     const thumbnaillocal=req.files["thumbnail"][0]?.path;
     //  console.log(thumbnail);
-     const image=await uploadCloudinary(thumbnail);
-     if(!image)
+     const thumbnail =await uploadCloudinary(thumbnaillocal);
+     if(!thumbnail)
          {
              throw new Apierror(404,"we can not get thumbnail");
          }
@@ -69,7 +69,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
      const video_detail = await Video.create
          ({
              videoFile: videoFile.url,
-             image:thumbnail.url,
+             thumbnail: thumbnail.url,
              title,
              description,duration
          }
