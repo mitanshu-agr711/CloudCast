@@ -10,7 +10,7 @@ const connectDB=async()=>{
        console.log(`\n MONGO_DB HOSTED ${connectionInstant.connection.host}`);//agr sirf hum {connection likha to hame sirf object mila}
     } catch (error) {
         console.log("Mongo db connection FAILED",error);
-        // process.exit(1);
+        throw Error(error.message);
     }
 }
 
