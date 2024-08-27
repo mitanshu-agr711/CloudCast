@@ -13,6 +13,8 @@ const addcomment = asyncHandler(async (req, res) => {
     console.log("agaya mai yha");
     try {
         const {email,password, content } = req.body;
+        const owner = req.user._id; // Assuming req.user._id contains the authenticated user's ID
+
         const exit = await User.findOne({
             $or: [{ email }, { password }]
         })
@@ -23,7 +25,7 @@ const addcomment = asyncHandler(async (req, res) => {
             throw new Apierror("please enter your content");
         }
         const user_content = await Comment.create({
-            content
+            content,owner
         });
         if (!user_content) {
             throw new Apierror(500, "something went wrong");
