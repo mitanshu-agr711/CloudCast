@@ -3,7 +3,7 @@
 Environment Configuration
 Create a .env file in the root of your project and add the following:
 
-Copy code
+
 PORT=3000
 
 MONGODB_URL=your-mongodb-connection-url-here
