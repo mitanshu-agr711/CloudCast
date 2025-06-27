@@ -7,7 +7,6 @@
 - [Installation](#installation)
 - [Environment Configuration](#environment-configuration)
 - [Running the Server](#running-the-server)
-- [API Endpoints](#api-endpoints)
 - [License](#license)
 
 ## Introduction
@@ -69,12 +68,6 @@ To start the server in production mode:
 npm start
 ```
 
-## API Endpoints
-| Method | Endpoint        | Description          |
-|--------|---------------|----------------------|
-| GET    | `/api/test`   | Test API endpoint   |
-| POST   | `/api/login`  | User login          |
-| POST   | `/api/signup` | User registration   |
 
 ## License
 This project is licensed under the MIT License.
